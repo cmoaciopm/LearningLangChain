@@ -1,0 +1,76 @@
+import getpass
+import os
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
+from langchain.chat_models import init_chat_model
+
+if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+
+if not os.environ.get("QWEN_API_KEY"):
+    os.environ["QWEN_API_KEY"] = getpass.getpass("Enter Qwen API key: ")
+
+llm = init_chat_model(
+    model_provider="openai",
+    model="qwen-plus-2025-04-28",
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    api_key=os.environ["QWEN_API_KEY"],
+    #model_kwargs={
+    #    "response_format": {"type": "json_object"}
+    #}
+)
+"""
+llm = ChatOpenAI(
+    model="qwen-plus-2025-04-28",
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    api_key=os.environ["QWEN_API_KEY"],
+    model_kwargs={
+        "response_format": {"type": "json_object"}
+    }
+)
+"""
+tagging_prompt = ChatPromptTemplate.from_template(
+    """
+        Extract the desired information into JSON format from the following passage.
+        Only extract the properties mentioned in the 'Classification' function.
+        Passage:
+        {input}
+    """
+)
+
+class Classification(BaseModel):
+    sentiment: str = Field(
+        description="The sentiment of the text",
+        enum=["happy", "neutral", "sad"]
+    )
+    language: str = Field(
+        description="The language the text is written in",
+        enum=['spanish', "english", "french", "german", "italian"]
+    )
+    #aggressiveness: int = Field(
+    #   description="describes how aggressive the statement is, the higher the number the more aggressive",
+    #   enum=[1, 2, 3, 4, 5]
+    #)
+
+structured_llm = llm.with_structured_output(Classification)
+
+inp = "Estoy increiblemente contento de haberte conocido! Creo que seremos muy buenos amigos!"
+prompt = tagging_prompt.invoke({"input": inp})
+response = structured_llm.invoke(prompt)
+print(response.model_dump())
+
+inp = "Estoy muy enojado con vos! Te voy a dar tu merecido!"
+prompt = tagging_prompt.invoke({"input": inp})
+response = structured_llm.invoke(prompt)
+print(response.model_dump())
+
+inp = "Weather is ok here, I can go outside without much more than a coat"
+prompt = tagging_prompt.invoke({"input": inp})
+response = structured_llm.invoke(prompt)
+print(response.model_dump())
+
+
+
