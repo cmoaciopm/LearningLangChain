@@ -1,5 +1,6 @@
 import getpass
 import os
+from typing import Literal
 
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
@@ -24,17 +25,14 @@ tagging_prompt = ChatPromptTemplate.from_template(
 )
 
 class Classification(BaseModel):
-    sentiment: str = Field(
-        description="The sentiment of the text",
-        enum=["happy", "neutral", "sad"]
+    sentiment: Literal["happy", "neutral", "sad"] = Field(
+        description="The sentiment of the text"
     )
-    language: str = Field(
-        description="The language the text is written in",
-        enum=['spanish', "english", "french", "german", "italian"]
+    language: Literal['spanish', "english", "french", "german", "italian"] = Field(
+        description="The language the text is written in"
     )
-    aggressiveness: int = Field(
-       description="describes how aggressive the statement is, the higher the number the more aggressive",
-       enum=[1, 2, 3, 4, 5]
+    aggressiveness: Literal[1, 2, 3, 4, 5] = Field(
+       description="describes how aggressive the statement is, the higher the number the more aggressive"
     )
 
 structured_llm = llm.with_structured_output(Classification)
