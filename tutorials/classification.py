@@ -1,41 +1,18 @@
-import getpass
-import os
 from typing import Literal
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
-from langchain.chat_models import init_chat_model
 
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
 
-if not os.environ.get("QWEN_API_KEY"):
-    os.environ["QWEN_API_KEY"] = getpass.getpass("Enter Qwen API key: ")
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-llm = init_chat_model(
-    model_provider="openai",
-    model="qwen-plus-2025-04-28",
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    api_key=os.environ["QWEN_API_KEY"],
-    #model_kwargs={
-    #    "response_format": {"type": "json_object"}
-    #}
-)
-"""
 llm = ChatOpenAI(
-    model="qwen-plus-2025-04-28",
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    api_key=os.environ["QWEN_API_KEY"],
-    model_kwargs={
-        "response_format": {"type": "json_object"}
-    }
+    model="qwen3:8b",
+    base_url="http://localhost:11434/v1",
+    api_key="123456"
 )
-"""
 tagging_prompt = ChatPromptTemplate.from_template(
     """
         Extract the desired information into JSON format from the following passage.
@@ -52,9 +29,9 @@ class Classification(BaseModel):
     language: Literal['spanish', "english", "french", "german", "italian"] = Field(
         description="The language the text is written in"
     )
-    #aggressiveness: Literal[1, 2, 3, 4, 5] = Field(
-    #   description="describes how aggressive the statement is, the higher the number the more aggressive"
-    #)
+    aggressiveness: Literal[1, 2, 3, 4, 5] = Field(
+       description="describes how aggressive the statement is, the higher the number the more aggressive"
+    )
 
 structured_llm = llm.with_structured_output(Classification)
 
