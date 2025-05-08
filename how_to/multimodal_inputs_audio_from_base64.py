@@ -6,10 +6,6 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
 
-def pdf_to_base64(file_path):
-    with open(file_path, "rb") as pdf_file:
-        return base64.b64encode(pdf_file.read()).decode('utf-8')
-
 audio_file_path = "../resources/test.mp3"
 
 with open(audio_file_path, "rb") as audio_file:
